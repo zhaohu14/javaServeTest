@@ -1,14 +1,17 @@
 package Util;
 
+import com.google.gson.JsonElement;
 import com.sun.net.httpserver.HttpExchange;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+
+import com.google.gson.Gson;
 
 public class MyUtil {
     /*
@@ -33,23 +36,34 @@ public class MyUtil {
 
             }
         }
-        System.out.println(dataMap);
+//        System.out.println(dataMap);
         return dataMap;
     }
 
     /*
     * 解析JSON数据
-    * @postData：post请求参数 Map<String, String>
+    * @postData：请求参数 Map<String, String>
     * */
-    private static Map<String, String> parsePostData(String postData, HttpExchange exchange) throws IOException {
+    public static Map<String, String> parsePostData(String postData, HttpExchange exchange) throws IOException {
 
         Map<String, String> dataMap = new HashMap<>();
 
         // 假设POST数据是JSON格式，使用JSON解析库解析
+//        try {
+//            Gson gson = new Gson();
+//            JSONObject jsonObject = new JSONObject(postData);
+//            for (String key : jsonObject.keySet()) {
+//                dataMap.put(key, jsonObject.getString(key));
+//            }
+//        } catch (Exception e) {
+//            throwException(exchange, e.getMessage());
+//        }
         try {
-            JSONObject jsonObject = new JSONObject(postData);
-            for (String key : jsonObject.keySet()) {
-                dataMap.put(key, jsonObject.getString(key));
+            Gson gson = new Gson();
+            JsonObject jsonObject = gson.fromJson(postData, JsonObject.class);
+
+            for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+                dataMap.put(entry.getKey(), entry.getValue().toString());
             }
         } catch (Exception e) {
             throwException(exchange, e.getMessage());
@@ -64,14 +78,40 @@ public class MyUtil {
     * @errorMsg: 请求错误信息 String
     * */
     public static void throwException (HttpExchange exchange, String errorMsg) throws  IOException {
-        String jsonResponse = "{\"message\": \"" + errorMsg + "\",\"state\": \"fail\"}";
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.addProperty("msg", errorMsg);
+        jsonResponse.addProperty("state", "fail");
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
-        exchange.sendResponseHeaders(400, jsonResponse.getBytes("UTF-8").length);
+        exchange.sendResponseHeaders(200, 0);
         try {
             OutputStream os = exchange.getResponseBody();
-            os.write(jsonResponse.getBytes());
+            // 使用 Gson 的 JsonWriter 直接将 JSON 对象写入输出流
+            try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(os, "UTF-8"))) {
+                writer.jsonValue(jsonResponse.toString());
+            }
         } catch (Exception err) {
             err.printStackTrace();
         };
+        exchange.close();
+    }
+    /*
+    * 返回成功响应
+    * @exchange: 请求体 HttpExchange
+    * @obj: 返回前端JSON数据 JsonObject
+    * */
+    public static void successException (HttpExchange exchange, JsonObject obj) throws IOException {
+        obj.addProperty("state", "ok");
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
+        exchange.sendResponseHeaders(200, 0);
+        try {
+            OutputStream os = exchange.getResponseBody();
+            // 使用 Gson 的 JsonWriter 直接将 JSON 对象写入输出流
+            try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(os, "UTF-8"))) {
+                writer.jsonValue(obj.toString());
+            }
+        } catch (Exception err) {
+            err.printStackTrace();
+        };
+        exchange.close();
     }
 }

@@ -13,11 +13,9 @@ public class APIMAIN implements HttpHandler{
     public void handle(HttpExchange exchange) throws IOException {
         String requestMethod = exchange.getRequestMethod();
         String requestPath = exchange.getRequestURI().getPath();
-        System.out.println(requestPath);
         if (requestPath.equals("/api/wxLogin")) {
-//            WXLogin((HttpHandler) exchange);
             WXLogin(exchange);
         }
-        exchange.close();
+//        exchange.close();
     }
 }
