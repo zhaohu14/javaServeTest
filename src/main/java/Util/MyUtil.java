@@ -1,17 +1,15 @@
 package Util;
-
 import com.google.gson.JsonElement;
 import com.sun.net.httpserver.HttpExchange;
 import org.json.JSONObject;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-
 import com.google.gson.Gson;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class MyUtil {
     /*
@@ -113,5 +111,34 @@ public class MyUtil {
             err.printStackTrace();
         };
         exchange.close();
+    }
+
+    /*
+    * md5加密
+    * @str: 需要加密的字符串 String
+    * */
+    public static String encryptString(String str) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(str.getBytes());
+
+            byte[] byteData = md.digest();
+
+            // 将字节数组转换为十六进制字符串
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : byteData) {
+                String hex = Integer.toHexString(0xFF & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            // 处理加密算法不可用的异常
+            return null;
+        }
     }
 }
