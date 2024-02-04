@@ -47,6 +47,7 @@ public class wxLogin {
 //                boolean result =
             } else {
                 System.out.println("无数据走插入数据");
+                result = addDataUuid(connector, openid, uuid);
             }
             if (result) {
                 JsonObject jsonObj = new JsonObject();
@@ -71,6 +72,11 @@ public class wxLogin {
         String updateQuery = "UPDATE user_table SET uuid = ? WHERE openid = ?";
         System.out.println("更新数据库语句：" + updateQuery);
         boolean result = connector.executeUpdata(updateQuery, uuid, openid.replace("\"", ""));
+        return result;
+    }
+    static boolean addDataUuid (DatabaseConnector connector, String openid, String uuid) {
+        String addDATE = "INSERT INTO user_table (openid, uuid) VALUES (?, ?)";
+        boolean result = connector.addUpdataSql(addDATE, openid.replace("\"", ""), uuid);
         return result;
     }
 }

@@ -14,7 +14,7 @@ public class DatabaseConnector {
     private static final String PASSWORD = "wEtzO1jaka/p";
 
     // 数据库连接对象
-    private Connection connection;
+    private static Connection connection;
 
     // 构造函数，在创建类的实例时初始化数据库连接
     public DatabaseConnector() {
@@ -76,6 +76,30 @@ public class DatabaseConnector {
             // 创建 PreparedStatement 对象
             preparedStatement.setString(1, newValue);
             preparedStatement.setString(2, updataif);
+            // 执行查询
+            int rowsAffected = preparedStatement.executeUpdate();
+            boolean a = false;
+            if (rowsAffected > 0) {
+                a = true;
+            } else {
+                a = false;
+                System.out.println("No data found for update.");
+            }
+//            ResultSet resultSet = preparedStatement.executeQuery();
+            // 处理查询结果
+
+            // 返回结果集
+            return a;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // 或者抛出自定义异常，根据具体情况处理错误
+        }
+    }
+    public static boolean addUpdataSql (String query, String openid, String uuid) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            // 创建 PreparedStatement 对象
+            preparedStatement.setString(1, openid);
+            preparedStatement.setString(2, uuid);
             // 执行查询
             int rowsAffected = preparedStatement.executeUpdate();
             boolean a = false;
